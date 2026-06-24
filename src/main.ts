@@ -1740,7 +1740,7 @@ async function searchAggregated(
   const searches = AGGREGATE_SOURCES.map(async (source, priority) => {
     try {
       const result = await searchSongs(keyword, source as OnlineSource, page, perSourceLimit);
-      return result.songs.map(s => ({ ...s, _sourcePriority: priority }));
+      return result.songs.map(s => ({ ...s, source, _sourcePriority: priority }));
     } catch (e) {
       console.error(`[LXBridge] Search failed for source ${source}:`, String(e));
       return [];
@@ -1782,6 +1782,37 @@ router.post('/api/search', createSearchHandler({
     }
   }
 }));
+
+// POST /api/config/search — 配置页内部搜索端点（前端搜索面板调用）
+// 支持 source='all' 聚合搜索，返回 { songs, total, source, sourceName, page, pageSize }
+router.post('/api/config/search', async (req: HTTPRequest): Promise<HTTPResponse> => {
+  const body = requestBodyObject(req);
+  const keyword = primitiveString(body.keyword ?? body.query ?? body.q);
+  const rawSource = primitiveString(body.source || 'all');
+  const page = Math.max(1, numericValue(body.page, 1));
+  const pageSize = Math.min(100, Math.max(1, numericValue(body.pageSize ?? body.page_size, 100)));
+
+  if (!keyword.trim()) {
+    return jsonResponse({ songs: [], total: 0, source: rawSource, sourceName: '全部', page, pageSize });
+  }
+
+  if (rawSource === 'all') {
+    const merged = await searchAggregated(keyword, page, pageSize);
+    const songs = merged.slice(0, pageSize).map(({ _sourcePriority, ...rest }) => rest);
+    return jsonResponse({
+      songs,
+      total: songs.length,
+      source: 'all',
+      sourceName: '聚合搜索',
+      page,
+      pageSize
+    });
+  }
+
+  const source = normalizeOnlineSource(rawSource);
+  const result = await searchSongs(keyword, source, page, pageSize);
+  return jsonResponse(result);
+});
 
 // POST /api/music/url — 标准 Songloft URL 解析端点
 router.post('/api/music/url', createMusicUrlHandler({

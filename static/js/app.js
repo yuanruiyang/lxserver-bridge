@@ -69,7 +69,7 @@ const state = {
     detailToken: 0
   },
   songSearch: {
-    source: 'kw',
+    source: 'all',
     keyword: '',
     results: [],
     busy: false,
@@ -172,6 +172,7 @@ function deviceLabel(device) {
 }
 
 function sourceLabel(source) {
+  if (source === 'all') return '聚合搜索';
   return state.online.sources.find((item) => item.id === source)?.name || source || '';
 }
 
@@ -706,7 +707,8 @@ function searchSongAlbum(song) {
 
 function renderSongSearchPanel() {
   const search = state.songSearch;
-  $('song-search-source').innerHTML = state.online.sources.map((source) => `
+  $('song-search-source').innerHTML = `<option value="all">聚合搜索（全平台）</option>` +
+    state.online.sources.map((source) => `
     <option value="${escapeHtml(source.id)}">${escapeHtml(source.name)}</option>
   `).join('');
   $('song-search-source').value = search.source;
@@ -767,11 +769,11 @@ async function searchSongsFromLx() {
   state.songSearch.busy = true;
   renderSongSearchPanel();
   try {
-    const data = await pluginApi.post('/api/search', {
+    const data = await pluginApi.post('/api/config/search', {
       keyword,
       source: state.songSearch.source,
       page: 1,
-      pageSize: 30
+      pageSize: 100
     });
     if (token !== state.songSearch.loadToken) return;
     state.songSearch.results = Array.isArray(data.songs) ? data.songs : [];

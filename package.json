@@ -1,0 +1,20 @@
+{
+  "name": "songloft-lxserver-bridge",
+  "version": "0.1.0",
+  "description": "Songloft LXServer 桥接插件 — 歌单导入、聚合搜索、播放解析、MiOT 音箱推送。",
+  "private": true,
+  "scripts": {
+    "clean": "node scripts/clean-build.mjs",
+    "prebuild": "npm run clean",
+    "build": "songloft-plugin build",
+    "regression": "node scripts/regression-checks.mjs",
+    "ui-check": "node scripts/ui-design-checks.mjs",
+    "validate": "node scripts/validate-built.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@songloft/plugin-builder": "^2.6.0",
+    "@songloft/plugin-sdk": "^2.6.0",
+    "typescript": "^5.7.0"
+  }
+}

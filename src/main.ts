@@ -1906,7 +1906,8 @@ router.post('/api/miot/search', async (req: HTTPRequest) => {
         const sd = sourceData(song, quality);
         const playUrl = await resolveLxMusicUrl(sd);
         if (playUrl) {
-          console.log(`[LXBridge] MIoT search: "${keyword}" → ${song.name} - ${song.singer} (${song.source})`);
+          const lyric = await fetchLyricFromLxserver(song);
+          console.log(`[LXBridge] MIoT search: "${keyword}" → ${song.name} - ${song.singer} (${song.source})${lyric ? ' [lyric]' : ''}`);
           return jsonResponse({
             code: 0,
             msg: 'success',
@@ -1917,6 +1918,7 @@ router.post('/api/miot/search', async (req: HTTPRequest) => {
               duration: intervalToSeconds(song.interval),
               cover_url: songCover(song),
               url: playUrl,
+              lyric: lyric || undefined,
               source_data: {
                 platform: SOURCE_TO_PLATFORM[song.source || ''] || song.source,
                 quality,

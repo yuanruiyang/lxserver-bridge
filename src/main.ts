@@ -1322,7 +1322,13 @@ async function playMiotOnlineSongUrl(req: MiotOnlineSongUrlRequest): Promise<Rec
     body: JSON.stringify({
       account_id: accountId,
       device_id: deviceId,
-      url
+      url,
+      title: req.songInfo.name || 'Untitled',
+      artist: req.songInfo.singer || '',
+      album: songAlbum(req.songInfo),
+      cover_url: songCover(req.songInfo),
+      duration: intervalToSeconds(req.songInfo.interval),
+      source: 'lxserver-bridge'
     })
   });
   await recordPluginPlayEvent({
@@ -1560,7 +1566,13 @@ async function playMiotSongUrl(req: MiotSongUrlRequest): Promise<Record<string, 
     body: JSON.stringify({
       account_id: accountId,
       device_id: deviceId,
-      url
+      url,
+      title: song.name || 'Untitled',
+      artist: song.singer || '',
+      album: songAlbum(song),
+      cover_url: songCover(song),
+      duration: intervalToSeconds(song.interval),
+      source: 'lxserver-bridge'
     })
   });
   await recordPluginPlayEvent({

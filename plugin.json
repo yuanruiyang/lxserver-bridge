@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/songloft-org/plugin-toolchain/main/schemas/plugin.schema.json",
   "name": "LXServer Bridge",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "LX Sync Server 桥接插件 — 歌单导入、在线浏览、聚合搜索、播放解析、MiOT 音箱推送。",
   "author": "songloft-local",
   "homepage": "https://github.com/yuanruiyang/lxserver-bridge",
@@ -19,8 +19,8 @@
     "inter-plugin"
   ],
   "updateUrl": "https://raw.githubusercontent.com/yuanruiyang/lxserver-bridge/main/plugin.json",
-  "download_url": "https://github.com/yuanruiyang/lxserver-bridge/releases/download/v0.1.1/lxserver-bridge.jsplugin.zip",
-  "entryHash": "5b2094413ab26774aecd5bac2b516205d5211f8502cf56457fc094fbe0643287",
-  "zipHash": "b096c0dae0221ce03bae91e4b3884b0734c3535a8e34098c585d532150324f15",
+  "download_url": "https://github.com/yuanruiyang/lxserver-bridge/releases/download/v0.1.2/lxserver-bridge.jsplugin.zip",
+  "entryHash": "b3616d719783b6b66149981fab84d3c88b0d2a1070d58e6d8ea84e937e8e62db",
+  "zipHash": "89be51db478aa98662766114b1812ce89bb34ac5b15b2a8d28a35837fc289551",
   "staticHash": true
 }

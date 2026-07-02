@@ -1317,6 +1317,7 @@ async function playMiotOnlineSongUrl(req: MiotOnlineSongUrlRequest): Promise<Rec
   }
   const config = await loadConfig();
   const url = await resolveLxMusicUrl(sourceData(req.songInfo, config.defaultQuality));
+  const lyric = await fetchLyricFromLxserver(req.songInfo);
   const payload = await miotJson<Record<string, unknown>>('/mina/play-url', {
     method: 'POST',
     body: JSON.stringify({
@@ -1328,7 +1329,8 @@ async function playMiotOnlineSongUrl(req: MiotOnlineSongUrlRequest): Promise<Rec
       album: songAlbum(req.songInfo),
       cover_url: songCover(req.songInfo),
       duration: intervalToSeconds(req.songInfo.interval),
-      source: 'lxserver-bridge'
+      source: 'lxserver-bridge',
+      lyric
     })
   });
   await recordPluginPlayEvent({
@@ -1561,6 +1563,7 @@ async function playMiotSongUrl(req: MiotSongUrlRequest): Promise<Record<string, 
 
   const config = await loadConfig();
   const url = await resolveLxMusicUrl(sourceData(song, config.defaultQuality));
+  const lyric = await fetchLyricFromLxserver(song);
   const payload = await miotJson<Record<string, unknown>>('/mina/play-url', {
     method: 'POST',
     body: JSON.stringify({
@@ -1572,7 +1575,8 @@ async function playMiotSongUrl(req: MiotSongUrlRequest): Promise<Record<string, 
       album: songAlbum(song),
       cover_url: songCover(song),
       duration: intervalToSeconds(song.interval),
-      source: 'lxserver-bridge'
+      source: 'lxserver-bridge',
+      lyric
     })
   });
   await recordPluginPlayEvent({
@@ -1622,6 +1626,29 @@ async function resolveLxMusicUrl(source: Record<string, unknown>): Promise<strin
 
   if (!payload.url) throw new Error('LX music/url returned empty url');
   return payload.url;
+}
+
+/** 从 lxserver 获取歌词 LRC 文本，失败返回空字符串（不阻塞推送流程） */
+async function fetchLyricFromLxserver(song: LxMusicInfo): Promise<string> {
+  try {
+    const params = new URLSearchParams();
+    if (song.source) params.set('source', String(song.source));
+    if (song.songmid != null) params.set('songmid', String(song.songmid));
+    if (song.hash) params.set('hash', String(song.hash));
+    if (song.name) params.set('name', String(song.name));
+    if (song.singer) params.set('singer', String(song.singer));
+    if (song.copyrightId != null) params.set('copyrightId', String(song.copyrightId));
+
+    const result = await lxFetchJson<{ lyric?: string }>(
+      `/api/music/lyric?${params.toString()}`,
+      { method: 'GET' },
+      true
+    );
+    return result?.lyric || '';
+  } catch (err) {
+    songloft.log.warn(`LX lyric fetch failed for ${song.name || 'unknown'}: ${err instanceof Error ? err.message : String(err)}`);
+    return '';
+  }
 }
 
 async function loadPlayEvents(): Promise<PlayEventRecord[]> {
